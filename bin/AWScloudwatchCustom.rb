@@ -217,7 +217,7 @@ workers = (0...$options[:threads].to_i).map do
 end; "ok"
 workers.map(&:join); "ok"
 
-runEnd = Time.new.utc
+$runEnd = Time.new.utc
 $runDuration = $runEnd - $runStart
 
 Sendit "vacuumetrix.#{my_script_tags[:script]}.run_time_sec", $runDuration, $runStart.to_i.to_s, my_script_tags
