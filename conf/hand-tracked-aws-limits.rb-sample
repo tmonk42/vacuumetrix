@@ -1,0 +1,9 @@
+# Values listed below are the AWS defaults. If you've requested 
+# increases for these, adjust accordingly.
+
+# $max_cloudformation_stacks = 20
+# $max_vpc_securitygroups = 100
+# $eb_apps = 25
+# $eb_versions = 500
+# $eb_envs = 200
+# $eb_templates = 500
