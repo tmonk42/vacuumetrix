@@ -57,11 +57,58 @@ autoscaling = Fog::AWS::AutoScaling.new(:aws_secret_access_key => $awssecretkey,
 compute = Fog::Compute.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 cloudformation = Fog::AWS::CloudFormation.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 elasticbeanstalk = Fog::AWS::ElasticBeanstalk.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
+iam = Fog::AWS::IAM.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => 'us-east-1')
+iam_sdk = Aws::IAM::Client.new(region:'us-east-1', credentials:creds)
 
 account_limits = {}
 account_values = {}
 
 # Only query these "hardcoded" limits if the max values appear in the configs
+if $iam_groups
+  account_limits['iam_groups'] = $iam_groups
+  iam_groups = iam.groups.all
+  account_values['iam_groups'] = iam_groups.length
+end
+if $iam_roles
+  account_limits['iam_roles'] = $iam_roles
+  is_truncated = true
+  marker = false
+  my_iam_roles = Array.new
+  while is_truncated do
+    iam_roles = marker ? iam_sdk.list_roles(marker: marker) : iam_sdk.list_roles()
+    my_iam_roles.concat(iam_roles.data.roles)
+    is_truncated = iam_roles.data.is_truncated
+    marker = iam_roles.data.marker
+  end
+  account_values['iam_roles'] = my_iam_roles.length
+end
+if $iam_profiles
+  account_limits['iam_profiles'] = $iam_profiles
+  is_truncated = true
+  marker = false
+  my_iam_profiles = Array.new
+  while is_truncated do
+    iam_profiles = marker ? iam_sdk.list_instance_profiles(marker: marker) : iam_sdk.list_instance_profiles()
+    my_iam_profiles.concat(iam_profiles.data.instance_profiles)
+    is_truncated = iam_profiles.data.is_truncated
+    marker = iam_profiles.data.marker
+  end
+  account_values['iam_profiles'] = my_iam_profiles.length
+end
+if $iam_certs
+  account_limits['iam_certs'] = $iam_certs
+  is_truncated = true
+  marker = false
+  my_iam_certs = Array.new
+  while is_truncated do
+    iam_certs = marker ? iam_sdk.list_server_certificates(marker: marker) : iam_sdk.list_server_certificates()
+    my_iam_certs.concat(iam_certs.data.server_certificate_metadata_list)
+    is_truncated = iam_certs.data.is_truncated
+    marker = iam_certs.data.marker
+  end
+  account_values['iam_certs'] = my_iam_certs.length
+  puts "DEBUG: certificates #{account_values['iam_certs']}"
+end
 if $eb_apps
   account_limits['eb_apps'] = $eb_apps
   applications = elasticbeanstalk.applications.all
