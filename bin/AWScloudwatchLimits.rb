@@ -59,11 +59,36 @@ cloudformation = Fog::AWS::CloudFormation.new(:aws_secret_access_key => $awssecr
 elasticbeanstalk = Fog::AWS::ElasticBeanstalk.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 iam = Fog::AWS::IAM.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => 'us-east-1')
 iam_sdk = Aws::IAM::Client.new(region:'us-east-1', credentials:creds)
+s3 = Fog::Storage.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
+elasticache = Fog::AWS::Elasticache.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 
 account_limits = {}
 account_values = {}
 
 # Only query these "hardcoded" limits if the max values appear in the configs
+if $elasticache_clusters || $elasticache_total_nodes || $elasticache_max_nodes_per_cluster
+  $my_elasticache_clusters = elasticache.clusters.all
+end
+if $elasticache_clusters
+  account_limits['elasticache_clusters'] = $elasticache_clusters
+  account_values['elasticache_clusters'] = $my_elasticache_clusters.length
+end
+if $elasticache_total_nodes
+  account_limits['elasticache_total_nodes'] = $elasticache_total_nodes
+  elasticache_total_nodes = 0
+  $my_elasticache_clusters.each {|c| elasticache_total_nodes += c.num_nodes}
+  account_values['elasticache_total_nodes'] = elasticache_total_nodes
+end
+if $elasticache_max_nodes_per_cluster
+  account_limits['elasticache_max_nodes_per_cluster'] = $elasticache_max_nodes_per_cluster
+  ec_max_nodes = $my_elasticache_clusters.max_by {|c| c.num_nodes}
+  account_values['elasticache_max_nodes_per_cluster'] = ec_max_nodes.num_nodes
+end
+if $s3_buckets
+  account_limits['s3_buckets'] = $s3_buckets
+  s3_buckets = s3.directories.all
+  account_values['s3_buckets'] = s3_buckets.length
+end
 if $iam_groups
   account_limits['iam_groups'] = $iam_groups
   iam_groups = iam.groups.all
