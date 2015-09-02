@@ -61,11 +61,27 @@ iam = Fog::AWS::IAM.new(:aws_secret_access_key => $awssecretkey, :aws_access_key
 iam_sdk = Aws::IAM::Client.new(region:'us-east-1', credentials:creds)
 s3 = Fog::Storage.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 elasticache = Fog::AWS::Elasticache.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
+r53 = Fog::DNS.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
 
 account_limits = {}
 account_values = {}
 
+current_instances = compute.servers.all
+
 # Only query these "hardcoded" limits if the max values appear in the configs
+if $ec2_flavors
+  $my_by_type = Hash.new {|k,v| k[v] = []}
+  current_instances.each {|instance| $my_by_type[instance.flavor_id.tr('.', '_')] << [instance] }
+  $ec2_flavors.each {|flavor,limit|
+    account_limits[flavor.to_s] = limit
+    account_values[flavor.to_s] = $my_by_type[flavor.to_s].length
+  }
+end
+if $r53_hosted_zones
+  account_limits['r53_hosted_zones'] = $r53_hosted_zones
+  hosted_zones = r53.zones.all
+  account_values['r53_hosted_zones'] = hosted_zones.length
+end
 if $elasticache_clusters || $elasticache_total_nodes || $elasticache_max_nodes_per_cluster
   $my_elasticache_clusters = elasticache.clusters.all
 end
@@ -183,7 +199,6 @@ account_values['launch_configs'] = autoscaling_launch_configs.length
 
 vpc_eips = compute.addresses.all
 account_values['vpc_elastic_ips'] = vpc_eips.length
-current_instances = compute.servers.all
 account_values['instances'] = current_instances.length
 
 account_limits.each do |limit, value|
