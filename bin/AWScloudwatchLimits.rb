@@ -200,16 +200,16 @@ if $eb_templates
   templates = elasticbeanstalk.templates.all
   account_values['eb_templates'] = templates.length
 end
-if $max_vpc_securitygroups
+if $secgroups_per_vpc
   my_groups = compute.describe_security_groups
   vpc_map = Hash.new(0) 
   my_groups[:body]['securityGroupInfo'].map {|group| vpc_map[group['vpcId']] += 1 }
-  account_limits['secgroups_per_vpc'] = $max_vpc_securitygroups
+  account_limits['secgroups_per_vpc'] = $secgroups_per_vpc
   account_values['secgroups_per_vpc'] = vpc_map.values.max
 end
-if $max_cloudformation_stacks
+if $cloudformation_stacks
   cf_stacks = cloudformation.describe_stacks
-  account_limits['cloudformation_stacks'] = $max_cloudformation_stacks
+  account_limits['cloudformation_stacks'] = $cloudformation_stacks
   account_values['cloudformation_stacks'] = cf_stacks.data[:body]['Stacks'].length
 end
 
