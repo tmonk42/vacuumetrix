@@ -62,6 +62,7 @@ iam_sdk = Aws::IAM::Client.new(region:'us-east-1', credentials:creds)
 s3 = Fog::Storage.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 elasticache = Fog::AWS::Elasticache.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
 r53 = Fog::DNS.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
+dynamodb_sdk = Aws::DynamoDB::Client.new(region:$awsregion, credentials:creds)
 
 account_limits = {}
 account_values = {}
@@ -69,6 +70,36 @@ account_values = {}
 current_instances = compute.servers.all
 
 # Only query these "hardcoded" limits if the max values appear in the configs
+if $dynamodb_tables || $dynamodb_write_units || $dynamodb_read_units
+  is_truncated = true
+  exclusive_start_table_name = false
+  $my_dynamodb_tables = Array.new
+  $my_dynamodb_write_units = 0
+  $my_dynamodb_read_units = 0
+  while is_truncated do
+    dynamodb_tables = exclusive_start_table_name ? dynamodb_sdk.list_tables(exclusive_start_table_name: exclusive_start_table_name) : dynamodb_sdk.list_tables()
+    $my_dynamodb_tables.concat(dynamodb_tables.data.table_names)
+    is_truncated = dynamodb_tables.data.last_evaluated_table_name
+    exclusive_start_table_name = dynamodb_tables.data.last_evaluated_table_name
+  end
+  $my_dynamodb_tables.each {|table|
+    my_table = dynamodb_sdk.describe_table({table_name: table})
+    $my_dynamodb_write_units += my_table.table.provisioned_throughput.write_capacity_units
+    $my_dynamodb_read_units += my_table.table.provisioned_throughput.read_capacity_units
+  }
+end
+if $dynamodb_tables
+  account_limits['dynamodb_tables'] = $dynamodb_tables
+  account_values['dynamodb_tables'] = $my_dynamodb_tables.length
+end
+if $dynamodb_write_units
+  account_limits['dynamodb_write_units'] = $dynamodb_write_units
+  account_values['dynamodb_write_units'] = $my_dynamodb_write_units
+end
+if $dynamodb_read_units
+  account_limits['dynamodb_read_units'] = $dynamodb_read_units
+  account_values['dynamodb_read_units'] = $my_dynamodb_read_units
+end
 if $ec2_flavors
   $my_by_type = Hash.new {|k,v| k[v] = []}
   current_instances.each {|instance| $my_by_type[instance.flavor_id.tr('.', '_')] << [instance] }
@@ -148,7 +179,6 @@ if $iam_certs
     marker = iam_certs.data.marker
   end
   account_values['iam_certs'] = my_iam_certs.length
-  puts "DEBUG: certificates #{account_values['iam_certs']}"
 end
 if $eb_apps
   account_limits['eb_apps'] = $eb_apps
