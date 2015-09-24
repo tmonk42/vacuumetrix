@@ -154,6 +154,19 @@ if $iam_roles
   end
   account_values['iam_roles'] = my_iam_roles.length
 end
+if $iam_policies
+  account_limits['iam_policies'] = $iam_policies
+  is_truncated = true
+  marker = false
+  my_iam_policies = Array.new
+  while is_truncated do
+    iam_policies = marker ? iam_sdk.list_policies(marker: marker) : iam_sdk.list_policies()
+    my_iam_policies.concat(iam_policies.data.policies)
+    is_truncated = iam_policies.data.is_truncated
+    marker = iam_policies.data.marker
+  end
+  account_values['iam_policies'] = my_iam_policies.length
+end
 if $iam_profiles
   account_limits['iam_profiles'] = $iam_profiles
   is_truncated = true
