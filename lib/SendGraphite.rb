@@ -10,7 +10,8 @@ end
 
 def SendGraphite(metricpath, metricvalue, metrictimestamp)
   retries = $graphiteretries
-  metricpath = "#{$graphiteprefix}.#{metricpath}" if $graphiteprefix && !$graphiteprefix.empty?
+  my_prefix = $options[:prefix].nil? ? $graphiteprefix : $options[:prefix]
+  metricpath = "#{my_prefix}.#{metricpath}" if my_prefix && !my_prefix.empty?
 	message = metricpath + " " + metricvalue.to_s + " " + metrictimestamp.to_s
   unless $options[:dryrun]
     begin

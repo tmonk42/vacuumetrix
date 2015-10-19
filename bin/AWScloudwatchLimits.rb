@@ -7,13 +7,17 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. conf])
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'config'
-# require 'Sendit'
 require 'rubygems' if RUBY_VERSION < "1.9"
 require 'fog'
 require 'json'
 require 'aws-sdk'
 require 'optparse'
-require 'hand-tracked-aws-limits'
+
+begin
+  require 'hand-tracked-aws-limits'
+rescue LoadError
+  puts 'no hand tracked limits'
+end
 
 $options = {
     :start_offset => 180,
@@ -22,6 +26,10 @@ $options = {
 
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: AWScloudwatchLimits.rb [options]"
+
+  opts.on('-p', '--prefix [STRING]', 'Graphite prefix') do |p|
+    $options[:prefix] = p
+  end
 
   opts.on('-d', '--dryrun', 'Dry run, does not send metrics') do |d|
     $options[:dryrun] = d
@@ -160,7 +168,7 @@ if $iam_policies
   marker = false
   my_iam_policies = Array.new
   while is_truncated do
-    iam_policies = marker ? iam_sdk.list_policies(marker: marker) : iam_sdk.list_policies()
+    iam_policies = marker ? iam_sdk.list_policies(scope: 'Local', marker: marker) : iam_sdk.list_policies(scope: 'Local')
     my_iam_policies.concat(iam_policies.data.policies)
     is_truncated = iam_policies.data.is_truncated
     marker = iam_policies.data.marker
