@@ -58,7 +58,9 @@ my_script_tags = {}
 my_script_tags[:script] = "AWScloudwatchLimits"
 my_script_tags[:account] = "nonprod"
 
-Aws.config[:credentials] = Aws::Credentials.new($awscredential[:aws_access_key_id], $awscredential[:aws_secret_access_key])
+if $awscredential[:aws_access_key_id]
+  Aws.config[:credentials] = Aws::Credentials.new($awscredential[:aws_access_key_id], $awscredential[:aws_secret_access_key])
+end
 autoscaling_sdk = Aws::AutoScaling::Client.new(region:$awsregion)
 ec2_sdk = Aws::EC2::Client.new(region:$awsregion)
 autoscaling = Fog::AWS::AutoScaling.new($awscredential.merge({:region => $awsregion}))
