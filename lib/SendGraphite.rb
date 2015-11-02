@@ -24,7 +24,7 @@ def SendGraphite(metricpath, metricvalue, metrictimestamp)
       puts "can't send " + message
       puts "\terror: #{e}"
       retries -= 1
-      $sendRetries += 1
+      $sendRetries[:graphite] += 1
       puts "\tretries left: #{retries}"
       retry if retries > 0
     end

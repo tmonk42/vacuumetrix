@@ -58,19 +58,18 @@ my_script_tags = {}
 my_script_tags[:script] = "AWScloudwatchLimits"
 my_script_tags[:account] = "nonprod"
 
-creds = Aws::Credentials.new($awsaccesskey, $awssecretkey)
-autoscaling_sdk = Aws::AutoScaling::Client.new(region:$awsregion, credentials:creds)
-ec2_sdk = Aws::EC2::Client.new(region:$awsregion, credentials:creds)
-autoscaling = Fog::AWS::AutoScaling.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
-compute = Fog::Compute.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
-cloudformation = Fog::AWS::CloudFormation.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
-elasticbeanstalk = Fog::AWS::ElasticBeanstalk.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
-iam = Fog::AWS::IAM.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => 'us-east-1')
-iam_sdk = Aws::IAM::Client.new(region:'us-east-1', credentials:creds)
-s3 = Fog::Storage.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
-elasticache = Fog::AWS::Elasticache.new(:aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey, :region => $awsregion)
-r53 = Fog::DNS.new(:provider => :aws, :aws_secret_access_key => $awssecretkey, :aws_access_key_id => $awsaccesskey)
-dynamodb_sdk = Aws::DynamoDB::Client.new(region:$awsregion, credentials:creds)
+autoscaling_sdk = Aws::AutoScaling::Client.new(region:$awsregion)
+ec2_sdk = Aws::EC2::Client.new(region:$awsregion)
+autoscaling = Fog::AWS::AutoScaling.new($awscredential.merge({:region => $awsregion}))
+compute = Fog::Compute.new($awscredential.merge({:region => $awsregion, :provider => :aws}))
+cloudformation = Fog::AWS::CloudFormation.new($awscredential.merge({:region => $awsregion}))
+elasticbeanstalk = Fog::AWS::ElasticBeanstalk.new($awscredential.merge({:region => $awsregion}))
+iam = Fog::AWS::IAM.new($awscredential.merge({:region => 'us-east-1'}))
+iam_sdk = Aws::IAM::Client.new(region:'us-east-1')
+s3 = Fog::Storage.new($awscredential.merge({:region => $awsregion, :provider => :aws}))
+elasticache = Fog::AWS::Elasticache.new($awscredential.merge({:region => $awsregion}))
+r53 = Fog::DNS.new({:region => $awsregion, :provider => :aws}))
+dynamodb_sdk = Aws::DynamoDB::Client.new(region:$awsregion)
 
 account_limits = {}
 account_values = {}
