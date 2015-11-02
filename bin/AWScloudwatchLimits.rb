@@ -68,7 +68,7 @@ iam = Fog::AWS::IAM.new($awscredential.merge({:region => 'us-east-1'}))
 iam_sdk = Aws::IAM::Client.new(region:'us-east-1')
 s3 = Fog::Storage.new($awscredential.merge({:region => $awsregion, :provider => :aws}))
 elasticache = Fog::AWS::Elasticache.new($awscredential.merge({:region => $awsregion}))
-r53 = Fog::DNS.new({:region => $awsregion, :provider => :aws}))
+r53 = Fog::DNS.new($awscredential.merge({:region => $awsregion, :provider => :aws}))
 dynamodb_sdk = Aws::DynamoDB::Client.new(region:$awsregion)
 
 account_limits = {}
