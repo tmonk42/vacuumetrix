@@ -17,6 +17,7 @@ $awsaccesskey = ''
 $awssecretkey = ''
 # $awsregion = 'us-east-1'
 $awsregion = 'us-east-1'
+$awsaccountalias = 'my_account'
 
 # AWS Tag(s)
 # $aws_tags = ['myTag1', 'myTag2' ... ]

@@ -19,11 +19,6 @@ rescue LoadError
   puts 'no hand tracked limits'
 end
 
-$options = {
-    :start_offset => 180,
-    :end_offset => 120
-}
-
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: AWScloudwatchLimits.rb [options]"
 
@@ -56,9 +51,9 @@ $collectionRetries = 0
 $sendRetries = Hash.new(0)
 my_script_tags = {}
 my_script_tags[:script] = "AWScloudwatchLimits"
-my_script_tags[:account] = "nonprod"
+my_script_tags[:account] = $aws_account_alias
 
-if $awscredential[:aws_access_key_id]
+if $awscredential && $awscredential[:aws_access_key_id]
   Aws.config[:credentials] = Aws::Credentials.new($awscredential[:aws_access_key_id], $awscredential[:aws_secret_access_key])
 end
 autoscaling_sdk = Aws::AutoScaling::Client.new(region:$awsregion)
