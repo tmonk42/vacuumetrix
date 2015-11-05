@@ -140,47 +140,47 @@ def fetch_hard_coded_limits()
     }
   end
   if $dynamodb_tables
-    $account_limits['us-west-2.DynamoDB.dynamodb_tables'] = $dynamodb_tables
-    $account_values['us-west-2.DynamoDB.dynamodb_tables'] = $my_dynamodb_tables.length
+    $account_limits[$awsregion + '.DynamoDB.dynamodb_tables'] = $dynamodb_tables
+    $account_values[$awsregion + '.DynamoDB.dynamodb_tables'] = $my_dynamodb_tables.length
   end
   if $dynamodb_write_units
-    $account_limits['us-west-2.DynamoDB.dynamodb_write_units'] = $dynamodb_write_units
-    $account_values['us-west-2.DynamoDB.dynamodb_write_units'] = $my_dynamodb_write_units
+    $account_limits[$awsregion + '.DynamoDB.dynamodb_write_units'] = $dynamodb_write_units
+    $account_values[$awsregion + '.DynamoDB.dynamodb_write_units'] = $my_dynamodb_write_units
   end
   if $dynamodb_read_units
-    $account_limits['us-west-2.DynamoDB.dynamodb_read_units'] = $dynamodb_read_units
-    $account_values['us-west-2.DynamoDB.dynamodb_read_units'] = $my_dynamodb_read_units
+    $account_limits[$awsregion + '.DynamoDB.dynamodb_read_units'] = $dynamodb_read_units
+    $account_values[$awsregion + '.DynamoDB.dynamodb_read_units'] = $my_dynamodb_read_units
   end
   if $ec2_flavors
     $my_by_type = Hash.new {|k,v| k[v] = []}
     $current_instances.each {|instance| $my_by_type[instance.flavor_id.tr('.', '_')] << [instance] }
     $ec2_flavors.each {|flavor,limit|
-      $account_limits['us-west-2.ec2.' + flavor.to_s] = limit
-      $account_values['us-west-2.ec2.' + flavor.to_s] = $my_by_type[flavor.to_s].length
+      $account_limits[$awsregion + '.ec2.' + flavor.to_s] = limit
+      $account_values[$awsregion + '.ec2.' + flavor.to_s] = $my_by_type[flavor.to_s].length
     }
   end
   if $r53_hosted_zones
-    $account_limits['us-west-2.R53.r53_hosted_zones'] = $r53_hosted_zones
+    $account_limits[$awsregion + '.R53.r53_hosted_zones'] = $r53_hosted_zones
     hosted_zones = $r53.zones.all
-    $account_values['us-west-2.R53.r53_hosted_zones'] = hosted_zones.length
+    $account_values[$awsregion + '.R53.r53_hosted_zones'] = hosted_zones.length
   end
   if $elasticache_clusters || $elasticache_total_nodes || $elasticache_max_nodes_per_cluster
     $my_elasticache_clusters = $elasticache.clusters.all
   end
   if $elasticache_clusters
-    $account_limits['us-west-2.ElastiCache.elasticache_clusters'] = $elasticache_clusters
-    $account_values['us-west-2.ElastiCache.elasticache_clusters'] = $my_elasticache_clusters.length
+    $account_limits[$awsregion + '.ElastiCache.elasticache_clusters'] = $elasticache_clusters
+    $account_values[$awsregion + '.ElastiCache.elasticache_clusters'] = $my_elasticache_clusters.length
   end
   if $elasticache_total_nodes
-    $account_limits['us-west-2.ElastiCache.elasticache_total_nodes'] = $elasticache_total_nodes
+    $account_limits[$awsregion + '.ElastiCache.elasticache_total_nodes'] = $elasticache_total_nodes
     elasticache_total_nodes = 0
     $my_elasticache_clusters.each {|c| elasticache_total_nodes += c.num_nodes}
-    $account_values['us-west-2.ElastiCache.elasticache_total_nodes'] = elasticache_total_nodes
+    $account_values[$awsregion + '.ElastiCache.elasticache_total_nodes'] = elasticache_total_nodes
   end
   if $elasticache_max_nodes_per_cluster
-    $account_limits['us-west-2.ElastiCache.elasticache_max_nodes_per_cluster'] = $elasticache_max_nodes_per_cluster
+    $account_limits[$awsregion + '.ElastiCache.elasticache_max_nodes_per_cluster'] = $elasticache_max_nodes_per_cluster
     ec_max_nodes = $my_elasticache_clusters.max_by {|c| c.num_nodes}
-    $account_values['us-west-2.ElastiCache.elasticache_max_nodes_per_cluster'] = ec_max_nodes.num_nodes
+    $account_values[$awsregion + '.ElastiCache.elasticache_max_nodes_per_cluster'] = ec_max_nodes.num_nodes
   end
   if $s3_buckets
     # S3 is global, set region to us-east-1
@@ -247,57 +247,57 @@ def fetch_hard_coded_limits()
     $account_values['us-east-1.IAM.iam_certs'] = my_iam_certs.length
   end
   if $eb_apps
-    $account_limits['us-west-2.ElasticBeanstalk.eb_apps'] = $eb_apps
+    $account_limits[$awsregion + '.ElasticBeanstalk.eb_apps'] = $eb_apps
     applications = $elasticbeanstalk.applications.all
-    $account_values['us-west-2.ElasticBeanstalk.eb_apps'] = applications.length
+    $account_values[$awsregion + '.ElasticBeanstalk.eb_apps'] = applications.length
   end
   if $eb_versions
-    $account_limits['us-west-2.ElasticBeanstalk.eb_versions'] = $eb_versions
+    $account_limits[$awsregion + '.ElasticBeanstalk.eb_versions'] = $eb_versions
     versions = $elasticbeanstalk.versions.all
-    $account_values['us-west-2.ElasticBeanstalk.eb_versions'] = versions.length
+    $account_values[$awsregion + '.ElasticBeanstalk.eb_versions'] = versions.length
   end
   if $eb_envs
-    $account_limits['us-west-2.ElasticBeanstalk.eb_envs'] = $eb_envs
+    $account_limits[$awsregion + '.ElasticBeanstalk.eb_envs'] = $eb_envs
     environments = $elasticbeanstalk.environments.all
-    $account_values['us-west-2.ElasticBeanstalk.eb_envs'] = environments.length
+    $account_values[$awsregion + '.ElasticBeanstalk.eb_envs'] = environments.length
   end
   if $eb_templates
-    $account_limits['us-west-2.ElasticBeanstalk.eb_templates'] = $eb_templates
+    $account_limits[$awsregion + '.ElasticBeanstalk.eb_templates'] = $eb_templates
     templates = $elasticbeanstalk.templates.all
-    $account_values['us-west-2.ElasticBeanstalk.eb_templates'] = templates.length
+    $account_values[$awsregion + '.ElasticBeanstalk.eb_templates'] = templates.length
   end
   if $secgroups_per_vpc
     my_groups = $compute.describe_security_groups
     vpc_map = Hash.new(0) 
     my_groups[:body]['securityGroupInfo'].map {|group| vpc_map[group['vpcId']] += 1 }
-    $account_limits['us-west-2.VPC.secgroups_per_vpc'] = $secgroups_per_vpc
-    $account_values['us-west-2.VPC.secgroups_per_vpc'] = vpc_map.values.max
+    $account_limits[$awsregion + '.VPC.secgroups_per_vpc'] = $secgroups_per_vpc
+    $account_values[$awsregion + '.VPC.secgroups_per_vpc'] = vpc_map.values.max
   end
   if $cloudformation_stacks
     cf_stacks = $cloudformation.describe_stacks
-    $account_limits['us-west-2.CloudFormation.cloudformation_stacks'] = $cloudformation_stacks
-    $account_values['us-west-2.CloudFormation.cloudformation_stacks'] = cf_stacks.data[:body]['Stacks'].length
+    $account_limits[$awsregion + '.CloudFormation.cloudformation_stacks'] = $cloudformation_stacks
+    $account_values[$awsregion + '.CloudFormation.cloudformation_stacks'] = cf_stacks.data[:body]['Stacks'].length
   end
 end
 
 def fetch_limits_via_api()
   asg_limits = $autoscaling_sdk.describe_account_limits()
-  $account_limits['us-west-2.AutoScaling.Auto_Scaling_groups'] = asg_limits.data.max_number_of_auto_scaling_groups
-  $account_limits['us-west-2.AutoScaling.Launch_configurations'] = asg_limits.data.max_number_of_launch_configurations
+  $account_limits[$awsregion + '.AutoScaling.Auto_Scaling_groups'] = asg_limits.data.max_number_of_auto_scaling_groups
+  $account_limits[$awsregion + '.AutoScaling.Launch_configurations'] = asg_limits.data.max_number_of_launch_configurations
 
   ec2_limit = $ec2_sdk.describe_account_attributes(attribute_names: ["max-instances"])
   eip_limit = $ec2_sdk.describe_account_attributes(attribute_names: ["vpc-max-elastic-ips"])
-  $account_limits['us-west-2.EC2.instances'] = ec2_limit.account_attributes[0].attribute_values[0].attribute_value
-  $account_limits['us-west-2.VPC.vpc_elastic_ips'] = eip_limit.account_attributes[0].attribute_values[0].attribute_value
+  $account_limits[$awsregion + '.EC2.instances'] = ec2_limit.account_attributes[0].attribute_values[0].attribute_value
+  $account_limits[$awsregion + '.VPC.vpc_elastic_ips'] = eip_limit.account_attributes[0].attribute_values[0].attribute_value
   
   autoscalinggroup_list = $autoscaling.groups.all
-  $account_values['us-west-2.AutoScaling.Auto_Scaling_groups'] = autoscalinggroup_list.length
+  $account_values[$awsregion + '.AutoScaling.Auto_Scaling_groups'] = autoscalinggroup_list.length
   autoscaling_launch_configs = $autoscaling.configurations.all
-  $account_values['us-west-2.AutoScaling.Launch_configurations'] = autoscaling_launch_configs.length
+  $account_values[$awsregion + '.AutoScaling.Launch_configurations'] = autoscaling_launch_configs.length
 
   vpc_eips = $compute.addresses.all
-  $account_values['us-west-2.VPC.vpc_elastic_ips'] = vpc_eips.length
-  $account_values['us-west-2.EC2.instances'] = $current_instances.length
+  $account_values[$awsregion + '.VPC.vpc_elastic_ips'] = vpc_eips.length
+  $account_values[$awsregion + '.EC2.instances'] = $current_instances.length
 end
 
 fetch_trusted_advisor
