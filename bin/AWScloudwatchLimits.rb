@@ -155,8 +155,8 @@ def fetch_hard_coded_limits()
     $my_by_type = Hash.new {|k,v| k[v] = []}
     $current_instances.each {|instance| $my_by_type[instance.flavor_id.tr('.', '_')] << [instance] }
     $ec2_flavors.each {|flavor,limit|
-      $account_limits[$awsregion + '.ec2.' + flavor.to_s] = limit
-      $account_values[$awsregion + '.ec2.' + flavor.to_s] = $my_by_type[flavor.to_s].length
+      $account_limits[$awsregion + '.EC2.' + flavor.to_s] = limit
+      $account_values[$awsregion + '.EC2.' + flavor.to_s] = $my_by_type[flavor.to_s].length
     }
   end
   if $r53_hosted_zones
