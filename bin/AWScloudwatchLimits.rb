@@ -166,21 +166,27 @@ def fetch_hard_coded_limits()
   end
   if $elasticache_clusters || $elasticache_total_nodes || $elasticache_max_nodes_per_cluster
     $my_elasticache_clusters = $elasticache.clusters.all
-  end
-  if $elasticache_clusters
-    $account_limits[$awsregion + '.ElastiCache.elasticache_clusters'] = $elasticache_clusters
-    $account_values[$awsregion + '.ElastiCache.elasticache_clusters'] = $my_elasticache_clusters.length
-  end
-  if $elasticache_total_nodes
-    $account_limits[$awsregion + '.ElastiCache.elasticache_total_nodes'] = $elasticache_total_nodes
-    elasticache_total_nodes = 0
-    $my_elasticache_clusters.each {|c| elasticache_total_nodes += c.num_nodes}
-    $account_values[$awsregion + '.ElastiCache.elasticache_total_nodes'] = elasticache_total_nodes
-  end
-  if $elasticache_max_nodes_per_cluster
-    $account_limits[$awsregion + '.ElastiCache.elasticache_max_nodes_per_cluster'] = $elasticache_max_nodes_per_cluster
-    ec_max_nodes = $my_elasticache_clusters.max_by {|c| c.num_nodes}
-    $account_values[$awsregion + '.ElastiCache.elasticache_max_nodes_per_cluster'] = ec_max_nodes.num_nodes
+
+    if $elasticache_clusters
+      $account_limits[$awsregion + '.ElastiCache.elasticache_clusters'] = $elasticache_clusters
+      $account_values[$awsregion + '.ElastiCache.elasticache_clusters'] = $my_elasticache_clusters.length
+    end
+    if $elasticache_total_nodes
+      $account_limits[$awsregion + '.ElastiCache.elasticache_total_nodes'] = $elasticache_total_nodes
+      elasticache_total_nodes = 0
+      $my_elasticache_clusters.each {|c| elasticache_total_nodes += c.num_nodes}
+      $account_values[$awsregion + '.ElastiCache.elasticache_total_nodes'] = elasticache_total_nodes
+    end
+    if $elasticache_max_nodes_per_cluster
+      $account_limits[$awsregion + '.ElastiCache.elasticache_max_nodes_per_cluster'] = $elasticache_max_nodes_per_cluster
+      if $my_elasticache_clusters.length > 0
+        ec_max_nodes = $my_elasticache_clusters.max_by {|c| c.num_nodes}
+        $account_values[$awsregion + '.ElastiCache.elasticache_max_nodes_per_cluster'] = ec_max_nodes.num_nodes
+      else
+        # If there are no clusters, there are no nodes, and the max is 0
+        $account_values[$awsregion + '.ElastiCache.elasticache_max_nodes_per_cluster'] = 0
+      end
+    end
   end
   if $s3_buckets
     # S3 is global, set region to us-east-1
