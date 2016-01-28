@@ -63,7 +63,7 @@ $autoscaling_sdk = Aws::AutoScaling::Client.new(region:$awsregion)
 $ec2_sdk = Aws::EC2::Client.new(region:$awsregion)
 $autoscaling = Fog::AWS::AutoScaling.new($awscredential.merge({:region => $awsregion}))
 $compute = Fog::Compute.new($awscredential.merge({:region => $awsregion, :provider => :aws}))
-$cloudformation = Fog::AWS::CloudFormation.new($awscredential.merge({:region => $awsregion}))
+$cloudformation_sdk = Aws::CloudFormation::Client.new(region:$awsregion)
 $elasticbeanstalk = Fog::AWS::ElasticBeanstalk.new($awscredential.merge({:region => $awsregion}))
 $iam = Fog::AWS::IAM.new($awscredential.merge({:region => 'us-east-1'}))
 $iam_sdk = Aws::IAM::Client.new(region:'us-east-1')
@@ -280,9 +280,21 @@ def fetch_hard_coded_limits()
     $account_values[$awsregion + '.VPC.secgroups_per_vpc'] = vpc_map.values.max
   end
   if $cloudformation_stacks
-    cf_stacks = $cloudformation.describe_stacks
+    cf_filter = ['CREATE_IN_PROGRESS', 'CREATE_FAILED', 'CREATE_COMPLETE', 'ROLLBACK_IN_PROGRESS', 'ROLLBACK_FAILED', 'ROLLBACK_COMPLETE', 'DELETE_IN_PROGRESS', 'DELETE_FAILED', 'UPDATE_IN_PROGRESS', 'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS', 'UPDATE_COMPLETE', 'UPDATE_ROLLBACK_IN_PROGRESS', 'UPDATE_ROLLBACK_FAILED', 'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS', 'UPDATE_ROLLBACK_COMPLETE']
+    is_truncated = true
+    marker = false
+    cf_stacks = Array.new
+    while is_truncated do
+      partial_cf_stacks = marker ? $cloudformation_sdk.list_stacks({next_token: partial_cf_stacks.next_token, stack_status_filter: cf_filter}) : $cloudformation_sdk.list_stacks({stack_status_filter: cf_filter})
+      cf_stacks.concat(partial_cf_stacks.stack_summaries)
+      if partial_cf_stacks.next_token
+        marker = true
+      else
+        is_truncated = false
+      end
+    end
     $account_limits[$awsregion + '.CloudFormation.cloudformation_stacks'] = $cloudformation_stacks
-    $account_values[$awsregion + '.CloudFormation.cloudformation_stacks'] = cf_stacks.data[:body]['Stacks'].length
+    $account_values[$awsregion + '.CloudFormation.cloudformation_stacks'] = cf_stacks.length
   end
 end
 
